@@ -1,0 +1,69 @@
+# Draft workflow for lily-builds/QCXR-XR-Wrapper.
+# Unity license secrets pending (UNITY_LICENSE / UNITY_EMAIL / UNITY_PASSWORD).
+# Verify GameCI input names at setup time before first real run.
+name: Build APK
+on:
+  workflow_dispatch:
+
+jobs:
+  pojlib:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Pojlib fork
+        uses: actions/checkout@v4
+        with:
+          repository: MrEnglish1996/QuestCraftPlus-Pojlib
+          ref: questcraftplus-main
+          path: pojlib
+          submodules: recursive
+          lfs: true
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install SDK components
+        run: |
+          sdkmanager --install "platforms;android-34" "build-tools;30.0.3" "ndk;26.1.10909125"
+      - name: Build AAR
+        working-directory: pojlib
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleRelease --no-daemon
+      - name: Upload AAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: pojlib-aar
+          path: pojlib/build/outputs/aar/*.aar
+
+  apk:
+    runs-on: ubuntu-latest
+    needs: pojlib
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: pojlib-aar
+          path: pojlib-aar
+      - name: Swap in built Pojlib AAR
+        run: |
+          ls -la pojlib-aar
+          cp pojlib-aar/*.aar "Assets/Plugins/Android/Pojlib-release.aar"
+          git add Assets/Plugins/Android/Pojlib-release.aar
+          git -c user.name="lily-builds" -c user.email="lily-279@ilands.app" commit -m "ci: use freshly built Pojlib AAR" || echo "nothing to commit"
+      - uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: .
+          targetPlatform: Android
+          androidExportType: androidPackage
+          buildName: QuestCraftPlusPlus
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: build/**/*.apk
