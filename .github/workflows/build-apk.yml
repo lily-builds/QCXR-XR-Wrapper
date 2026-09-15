@@ -1,6 +1,9 @@
-# Draft workflow for lily-builds/QCXR-XR-Wrapper.
-# Unity license secrets pending (UNITY_LICENSE / UNITY_EMAIL / UNITY_PASSWORD).
-# Verify GameCI input names at setup time before first real run.
+# Build APK for lily-builds/QCXR-XR-Wrapper (QuestCraftPlus+ port).
+# Verified 2026-09-15: game-ci/unity-builder@v4 input names OK (projectPath / targetPlatform /
+#   androidExportType); unityci/editor:ubuntu-2022.3.62f3-android-3.2.2 exists (exact editor match).
+# Pojlib job mirrors upstream recipe: submodules needed (wrapper = Wrapper-IL2CPP), git-lfs for *.so, NDK r26b.
+# Blocked on: UNITY_LICENSE / UNITY_EMAIL / UNITY_PASSWORD secrets (Creator's Unity account).
+# Dispatch on branch quest3-controller-profiles so the checkout includes the controller-profile fix.
 name: Build APK
 on:
   workflow_dispatch:
