@@ -46,8 +46,8 @@ public class InstanceManager : MonoBehaviour
     public void UpdateMenu()
     {
         string selectedModloader = loaderDropdown.options[loaderDropdown.value].text;
-        defaultModsToggle.interactable = selectedModloader is "Fabric" or "Quilt";
-        defaultModsToggle.isOn = selectedModloader is "Fabric" or "Quilt";
+        defaultModsToggle.interactable = selectedModloader is "Fabric" or "Quilt" or "Forge";
+        defaultModsToggle.isOn = selectedModloader is "Fabric" or "Quilt" or "Forge";
     }
 
     public void CreateCustomInstance()
@@ -94,7 +94,7 @@ public class InstanceManager : MonoBehaviour
             {
                 PojlibInstance instance = PojlibInstance.Parse(instanceObj);
                 GameObject instanceGameObject = Instantiate(instancePrefab, new Vector3(-10, -10, -10), Quaternion.identity);
-                instanceGameObject.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = instance.instanceName; instanceGameObject.transform.GetChild(2).GetComponent<TextMeshProUGUI>().text = instance.versionName + " - Fabric";
+                instanceGameObject.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = instance.instanceName; instanceGameObject.transform.GetChild(2).GetComponent<TextMeshProUGUI>().text = instance.versionName + " - " + (string.IsNullOrEmpty(instance.modLoader) ? "Fabric" : instance.modLoader);
                 instanceGameObject.transform.SetParent(instanceArray.transform, false);
                 instanceGameObject.name = instance.instanceName;
 
@@ -130,7 +130,7 @@ public class InstanceManager : MonoBehaviour
         PojlibInstance instance = JNIStorage.GetInstance(slug);
         windowHandler.InstanceInfoSetter();
 
-        instanceVersion.text = instance.versionName + " - Fabric";
+        instanceVersion.text = instance.versionName + " - " + (string.IsNullOrEmpty(instance.modLoader) ? "Fabric" : instance.modLoader);
         instanceTitle.text = instance.instanceName;
 
         if (instance.instanceImageURL != null)

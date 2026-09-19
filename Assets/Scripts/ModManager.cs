@@ -108,7 +108,18 @@ public class ModManager : MonoBehaviour
             };
 
             if (filterOption != "datapack" && filterOption != "resourcepack")
-                facets.Add("[\"categories:fabric\"]");
+            {
+                // Lily, forge-support WIP: search the instance's own loader, not always Fabric.
+                string loaderFacet = "fabric";
+                try
+                {
+                    PojlibInstance searchInst = JNIStorage.GetInstance(InstanceButton.currInstName);
+                    if (searchInst != null && !string.IsNullOrEmpty(searchInst.modLoader))
+                        loaderFacet = searchInst.modLoader.ToLower();
+                }
+                catch (System.Exception) { }
+                facets.Add("[\"categories:" + loaderFacet + "\"]");
+            }
 
             //https://docs.modrinth.com/#tag/projects/operation/searchProjects
             
